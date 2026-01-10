@@ -1,0 +1,20 @@
+{
+  "name": "taskmaster",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "cd taskMaster_server && npm run dev",
+    "client": "cd taskMaster_client && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "keywords": [],
+  "author": "Sir-josh",
+  "license": "ISC",
+  "type": "module",
+  
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
