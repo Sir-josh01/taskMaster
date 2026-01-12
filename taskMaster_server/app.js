@@ -18,7 +18,8 @@ const app = express();
 app.use(express.json());
 // app.use(cors());
 app.use(cors({
-  origin: 'https://task-master-three-delta.vercel.app/' // Vercel URL
+  origin: 'https://task-master-three-delta.vercel.app/',
+  credentials: true // Vercel URL
 }));
 
 // "Emergency Logger": It will print every request your server receives to the terminal:
