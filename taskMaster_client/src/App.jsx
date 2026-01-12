@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios';
 import Auth from './components/Auth';
+import { API_BASE_URL } from './config';
 import './App.css'
 
 function App() {
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
   const [feedback, setFeedback] = useState({ msg: "", type: "" });
   const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true)
@@ -24,7 +25,7 @@ function App() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token'); // Get the saved token
-      const res = await axios.get('http://localhost:8000/api/v1/tasks', {
+      const res = await axios.get(`${API_BASE_URL}/tasks`, {
       headers: {
         Authorization: `Bearer ${token}` // Send the "Passport"
       }
@@ -47,7 +48,7 @@ function App() {
     const token = localStorage.getItem('token');
     if(!editText) return;
     try {
-      await axios.patch(`http://localhost:8000/api/v1/tasks/${id}`, { name: editText }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.patch(`${API_BASE_URL}/tasks/${id}`, { name: editText }, { headers: { Authorization: `Bearer ${token}` } });
       setEditingId(null); // Close the input
       fetchTasks();
     } catch (error) {
@@ -59,7 +60,7 @@ function App() {
       const token = localStorage.getItem('token');
     try {
       const newStatus = !currentStatus ? 'completed' : 'pending'; // Logic: if not completed, make it completed
-    await axios.patch(`http://localhost:8000/api/v1/tasks/${id}`, {
+    await axios.patch(`${API_BASE_URL}/tasks/${id}`, {
       isCompleted: !currentStatus, status: newStatus //flip the true or false;
     }, {headers: { Authorization: `Bearer ${token}` }} );
       fetchTasks();
@@ -81,7 +82,7 @@ function App() {
   //   return console.log("Stop! Date is empty.");
   // }
     try {
-      await axios.post('http://localhost:8000/api/v1/tasks', {
+      await axios.post(`${API_BASE_URL}/tasks`, {
         name: name,
         dueDate:dueDate,
         priority,
@@ -107,7 +108,7 @@ function App() {
   const deleteTask = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:8000/api/v1/tasks/${id}`, {
+      await axios.delete(`${API_BASE_URL}/tasks/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
       fetchTasks();
@@ -140,7 +141,7 @@ function App() {
     if (confirmDelete) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete('http://localhost:8000/api/v1/auth/deleteAccount', {
+        await axios.delete(`${API_BASE_URL}/auth/deleteAccount`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -165,7 +166,7 @@ function App() {
     
     // Use Promise.all to delete them all in one go
     await Promise.all(
-      completedTasks.map(task => axios.delete(`http://localhost:8000/api/v1/tasks/${task._id}`, {
+      completedTasks.map(task => axios.delete(`${API_BASE_URL}/tasks/${task._id}`, {
           headers: { Authorization: `Bearer ${token}` } // Added this
         }))
     );

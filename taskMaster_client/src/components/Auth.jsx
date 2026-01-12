@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 const Auth = ({ onAuthSuccess }) => {
-  const API_BASE_URL = import.meta.env.MODE === 'development' 
-  ? 'http://localhost:8000/api/v1' 
-  : 'https://taskmaster-8upr.onrender.com'; //
 
   // 1. Toggle between Login and Register
   const [isLogin, setIsLogin] = useState(true);
