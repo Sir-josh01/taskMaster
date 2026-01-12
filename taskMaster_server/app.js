@@ -18,7 +18,11 @@ const app = express();
 app.use(express.json());
 // app.use(cors());
 app.use(cors({
-  origin: 'https://task-master-three-delta.vercel.app/',
+  origin: [
+    'https://task-master-three-delta.vercel.app', 
+    'https://task-master-e50abhcak-sir-josh01-projects.vercel.app', // Added the one from the error
+    'http://localhost:5173'
+  ],
   credentials: true // Vercel URL
 }));
 
