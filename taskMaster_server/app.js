@@ -15,7 +15,6 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.json());
 // app.use(cors());
 app.use(cors({
   origin: [
@@ -25,6 +24,9 @@ app.use(cors({
   ],
   credentials: true // Vercel URL
 }));
+
+app.use(express.json());
+
 
 // "Emergency Logger": It will print every request your server receives to the terminal:
 // app.use((req, res, next) => {

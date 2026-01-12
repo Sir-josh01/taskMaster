@@ -7,6 +7,8 @@ const Auth = ({ onAuthSuccess }) => {
   // 1. Toggle between Login and Register
   const [isLogin, setIsLogin] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
   
   // 2. Form state
   const [formData, setFormData] = useState({
@@ -18,6 +20,7 @@ const Auth = ({ onAuthSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
      setErrorMsg("");
+     setIsLoading(true);
 
       const url = isLogin 
     ? `${API_BASE_URL}/auth/login` 
@@ -35,6 +38,7 @@ const Auth = ({ onAuthSuccess }) => {
     } catch (error) {
       const msg = error.response?.data?.msg || "No Account Found, Create An Account";
     setErrorMsg(msg);
+    setIsLoading(false);
       // alert(error.response?.data?.msg || 'Something went wrong');
       setTimeout(() => setErrorMsg(""), 5000);
     }
@@ -60,21 +64,32 @@ const Auth = ({ onAuthSuccess }) => {
               onChange={(e) => setFormData({...formData, name: e.target.value})}
             />
           )}
-          <input 
-            type="email" 
-            placeholder="Email Address" 
-            required 
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-          />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            required 
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
-          />
+            <input 
+              type="email" 
+              placeholder="Email Address" 
+              required 
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+            />
+
+           <div className='password-wrapper' style={{ position: 'relative'}}>
+            <input 
+              style={{width: '100%'}}
+              type={showPassword ? "text" : "password"} 
+              placeholder="password" 
+              required 
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+            />
+              <span 
+                className="password-toggle" 
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: '10px', top: '25%', cursor: 'pointer' }}
+              >
+                {showPassword ? "👁️‍🗨️" : "👁️"}
+              </span>
+          </div>
           
-          <button type="submit" className="add-btn auth-btn">
-            {isLogin ? 'Sign In' : 'Sign Up'}
+          <button type="submit" className="add-btn auth-btn" disabled={loading}>
+            {loading ? <div className='spinner'></div> : (isLogin ? 'Sign In' : 'Sign Up')}
           </button>
         </form>
 
