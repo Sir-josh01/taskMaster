@@ -14,6 +14,16 @@ A powerful task management system designed to streamline productivity and time m
 * **Responsive UI:** Dark/Light mode with real-time task statistics.
 * **Account Security:** Hidden settings panel with permanent account deletion.
 
+## Preview
+![App Screenshot](./assets/Screenshot%20(270).png)
+![App Screenshot](./assets/Screenshot%20(271).png)
+![App Screenshot](./assets/Screenshot%20(272).png)
+![App Screenshot](./assets/Screenshot%20(273).png)
+![App Screenshot](./assets/Screenshot%20(274).png)
+![App Screenshot](./assets/Screenshot%20(275).png)
+![App Screenshot](./assets/Screenshot%20(276).png)
+![App Screenshot](./assets/Screenshot%20(277).png)
+
 ## 🧠 Challenges Encountered
 * **Monorepo Orchestration:** Setting up a single command to launch the full stack.
 * **Data Validation:** Ensuring tasks cannot be created without a title or valid date.
