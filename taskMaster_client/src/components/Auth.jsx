@@ -2,6 +2,10 @@ import { useState } from 'react';
 import axios from 'axios';
 
 const Auth = ({ onAuthSuccess }) => {
+  const API_BASE_URL = import.meta.env.MODE === 'development' 
+  ? 'http://localhost:8000/api/v1' 
+  : 'https://taskmaster-8upr.onrender.com'; //
+
   // 1. Toggle between Login and Register
   const [isLogin, setIsLogin] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
@@ -17,9 +21,9 @@ const Auth = ({ onAuthSuccess }) => {
     e.preventDefault();
      setErrorMsg("");
 
-    const url = isLogin 
-      ? 'http://localhost:8000/api/v1/auth/login' 
-      : 'http://localhost:8000/api/v1/auth/register';
+      const url = isLogin 
+    ? `${API_BASE_URL}/auth/login` 
+    : `${API_BASE_URL}/auth/register`;
 
     try {
       const { data } = await axios.post(url, formData);
