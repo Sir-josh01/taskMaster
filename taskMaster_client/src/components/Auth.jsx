@@ -8,7 +8,8 @@ const Auth = ({ onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+
   
   // 2. Form state
   const [formData, setFormData] = useState({

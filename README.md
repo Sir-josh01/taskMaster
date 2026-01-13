@@ -1,4 +1,12 @@
 # ✅ Task Master (MERN Stack)
+<p align="center">
+  <a href="https://task-master-three-delta.vercel.app">🚀 Live Demo</a> •
+  <a href="https://github.com/Sir-josh01/taskMaster">💻 Source Code</a> •
+  <a href="https://www.linkedin.com/in/sir-josh01/">🤝 LinkedIn</a> •
+  <a href="https://my-portfolio-gamma-swart-lajqbxpjim.vercel.app/">📂 Portfolio</a>
+</p>
+
+## 📝 Developer Overview
 
 A professional full-stack productivity application designed to streamline personal organization. This project provides users with a secure environment to manage tasks, track priorities, and maintain high efficiency through a clean, modern interface.
 
@@ -16,7 +24,7 @@ A professional full-stack productivity application designed to streamline person
 * **Environment-Aware Routing:** Dynamic API base URL switching that automatically detects if the app is running on `localhost` or production.
 * **Responsive Dashboard:** A mobile-first interface that adapts task cards and statistics for any screen size.
 
-## ScreenShots
+## 📸 ScreenShots
 
 | Screenshot 1 | Screenshot 2 | Screenshot 3 |
 | --- | --- | --- |
@@ -25,6 +33,8 @@ A professional full-stack productivity application designed to streamline person
 | <img src="./assets/Screenshot (273).png" width="250"> | <img src="./assets/Screenshot (274).png" width="250"> | <img src="./assets/Screenshot (275).png" width="250"> |
 | **Screenshot 7** | **Screenshot 8** | **Screenshot 9** |
 | <img src="./assets/Screenshot (276).png" width="250"> | <img src="./assets/Screenshot (277).png" width="250"> | <img src="./assets/Screenshot (278).png" width="250"> |
+ 
+## Check links above for live demo: Testing of application.
 
 ## 🧠 Challenges Faced
 
@@ -34,6 +44,17 @@ A professional full-stack productivity application designed to streamline person
 * **SSL Protocol Mismatch:** Resolved "Mixed Content" warnings by ensuring both the frontend (Vercel) and backend (Render) strictly communicate over **HTTPS**.
 
 ## 🛠️ Tech Stack
+
+![React](https://img.shields.io/badge/react-%2320232d.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
+
+## 🗺️ Future Roadmap
+
+* **Dark Mode:** System-wide theme switcher using CSS variables.
+* **Drag-and-Drop:** Task reordering with `dnd-kit`.
+* **Push Notifications:** Deadline alerts via Web Push API.
 
 ## 📡 API Documentation
 
@@ -54,12 +75,14 @@ To run this project locally, create a `.env` file in the `server` folder with th
 * `JWT_SECRET` = Your secure token secret key
 * `PORT` = 8000
 
-🛠️ Installation & Setup
+## 🛠️ Installation & Setup
+
 To get this project running on your local machine in under 2 minutes:
 Clone the Repository:Bash:git clone https://github.com/Sir-josh01/taskMaster.git
 cd taskMaster
 Setup Backend:Bash:cd server && npm install
 # Create a .env file with MONGO_URI, JWT_SECRET, and PORT=8000
+
 npm run dev
 Setup Frontend:Bash# In a new terminal tab
 cd client && npm install

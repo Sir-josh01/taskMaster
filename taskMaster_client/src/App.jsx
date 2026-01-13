@@ -10,6 +10,7 @@ function App() {
   const [feedback, setFeedback] = useState({ msg: "", type: "" });
   const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true)
+  const [isProcessing, setIsProcessing] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('task-master-theme') || 'dark');
   const [tasks, setTasks] = useState([]);
   const [name, setName] = useState('');
@@ -46,26 +47,49 @@ function App() {
 
   const handleUpdate = async (id) => {
     const token = localStorage.getItem('token');
-    if(!editText) return;
+    const originalTasks = [...tasks];
+
+    if(!editText.trim()) { 
+      setEditingId(null);
+      return;
+    } 
+    
+    // const updatedTasks = tasks.map(task => 
+    //   task.id === id ? {...task, name: editTask} : task
+    // );
+    // setTasks(updatedTasks);
+    setTasks(tasks.map(t => t._id === id ? {...t, name: editText} : t));
+    setEditingId(null);
     try {
-      await axios.patch(`${API_BASE_URL}/tasks/${id}`, { name: editText }, { headers: { Authorization: `Bearer ${token}` } });
-      setEditingId(null); // Close the input
+      await axios.patch(`${API_BASE_URL}/tasks/${id}`,
+         { name: editText }, 
+         { headers: { Authorization: `Bearer ${token}` } });
+
+      showFeedback("Task updated!", "success");
       fetchTasks();
     } catch (error) {
+      setTasks(originalTasks);
+      showFeedback("Update failed. Reverting...", "error");
       console.log("Update failed", error);
    }
   };
 
     const toggleComplete = async (id, currentStatus) => {
       const token = localStorage.getItem('token');
+
+      const updatedTasks = tasks.map(task => 
+        task._id === id ? {...task, isCompleted: !currentStatus} : task
+      );
+      setTasks(updatedTasks);
+
     try {
       const newStatus = !currentStatus ? 'completed' : 'pending'; // Logic: if not completed, make it completed
     await axios.patch(`${API_BASE_URL}/tasks/${id}`, {
       isCompleted: !currentStatus, status: newStatus //flip the true or false;
     }, {headers: { Authorization: `Bearer ${token}` }} );
-      fetchTasks();
       showFeedback(newStatus === 'completed' ? "Task Completed! 🎉" : "Task Re-opened", "success");
     } catch(error) {
+      fetchTasks();
       showFeedback("Update failed", "error");
       console.log("Toggle failed", error);
     }
@@ -76,11 +100,8 @@ function App() {
 
     if (!name || !dueDate) return;
     const token = localStorage.getItem('token'); //get token
-  //   console.log("Sending Data:", { name, dueDate, priority, description });
 
-  // if (!dueDate) {
-  //   return console.log("Stop! Date is empty.");
-  // }
+    setIsProcessing('creating');
     try {
       await axios.post(`${API_BASE_URL}/tasks`, {
         name: name,
@@ -101,12 +122,23 @@ function App() {
 
     } catch (error) {
       console.log('Error creating task', error.response?.data || error.message);
-      showFeedback("Failed to create task", "error");
+      const errorMsg = error.response?.data || "Network Error: Could not save task.";
+      showFeedback(errorMsg, "Failed to create task");
+    } finally {
+      setIsProcessing(false);
     }
   }
 
   const deleteTask = async (id) => {
     const token = localStorage.getItem('token');
+    const originalTasks = [...tasks];
+    // const filteredTasks = tasks.filter(task => task._d !== id);
+
+    // Optimistic Remove
+    setTasks(tasks.filter(t => t._id !== id));
+    setIsProcessing(id);
+
+    // setTasks(filteredTasks);
     try {
       await axios.delete(`${API_BASE_URL}/tasks/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -114,8 +146,11 @@ function App() {
       fetchTasks();
       showFeedback("Task deleted", "success");
     } catch (error) {
-      showFeedback("Error deleting task", "error");
+      setTasks(originalTasks);
+      showFeedback("Error deleting task", "Task restored.", "error");
       console.log('Error deleting task', error);
+    } finally {
+      setIsProcessing(null);
     }
   }
 
@@ -239,7 +274,6 @@ useEffect(() => {
                 </div>
               )}
 
-
             {/* <button className="delete-acc-btn" onClick={handleDeleteAccount}>Delete Account</button>
             <button className="logout-btn" onClick={() => {
               localStorage.clear();
@@ -255,7 +289,6 @@ useEffect(() => {
         {/* Form Container */}
           <form onSubmit={createTask} className='form-container'> 
             <div className='input-group'>
-              
               <input 
                 className='main-input'
                 type="text"
@@ -291,7 +324,7 @@ useEffect(() => {
                 />
                 </div>
             </div>
-              <button type='submit' className='add-btn'>Add Task</button>
+              <button type='submit' className='add-btn' disabled={isProcessing === 'creating'}>{isProcessing === 'creating' ? <div className='spinner-small'></div> : "Add Task"}</button>
           </form>
 
              {/* Add this right after your </form> tag */}
@@ -328,7 +361,7 @@ useEffect(() => {
               </div>
             ) : tasks.length > 0 ? (
               tasks.map((task) => (
-                <div key={task._id} className={`task-card priority-${task.priority.toLowerCase()}`}>
+                <div key={task._id} className={`task-card priority-${(task.priority || "Medium").toLowerCase()}`}>
                   <div className="main-row">
                     <input 
                       type='checkbox'
@@ -367,7 +400,7 @@ useEffect(() => {
                     </div>
                   </div>
                 {/* </div> */}
-                  <button onClick={() => deleteTask(task._id)} className='delete-btn'>Delete</button>
+                  <button onClick={() => deleteTask(task._id)} disabled={isProcessing === task._id} className='delete-btn'>{isProcessing === task._id ? <div className='spinner-small'></div> : "Delete"}</button>
                 </div>
               ))
             ) : (
