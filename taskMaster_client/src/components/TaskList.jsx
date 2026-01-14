@@ -5,8 +5,10 @@ const TaskList = ({ loading, tasks, handleUpdate, toggleComplete, deleteTask, is
   if (loading) {
     return (
       <div className="loader-container">
-        <div className="spinner"></div>
-        <p>Syncing with database...</p>
+       {[1, 2, 3].map((n) => (
+        <div key={n} className="skeleton-card"></div>
+       ))}
+        <p style={{textAlign: 'center', opacity: 0.2,  }}>Syncing with database...</p>
       </div>
     );
   }

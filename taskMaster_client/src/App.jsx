@@ -8,7 +8,6 @@ import './App.css'
 import NavBar from './components/NavBar';
 import ThemeToggle from './components/ThemeToggle';
 import TaskForm from './components/TaskForm';
-import TaskItem from './components/TaskItem';
 import TaskStats from './components/TaskStats'
 import TaskList from './components/TaskList';
 
@@ -23,7 +22,8 @@ function App() {
   const [tasks, setTasks] = useState([]);
 
 
-  const fetchTasks = async () => {
+  const fetchTasks = async (retryCount = 0) => {
+    const MAX_RETRIES = 3;
     setLoading(true);
     try {
       const token = localStorage.getItem('token'); // Get the saved token
@@ -34,12 +34,15 @@ function App() {
 
       setTasks(res.data.tasks) 
     } catch(err) {
-      if (err.code === 'ECONNABORTED') {
+      const isNetworkError = !err.response;
+      const isTimeout = err.code === 'ECONNABORTED';
 
-      showFeedback('Server is waking up from sleep. Retrying...', 'error');
-      setTimeout(() => fetchTasks(), 2000);
+      if ((isTimeout || isNetworkError) && retryCount < MAX_RETRIES) {
+      showFeedback(`Connection weak. Retrying... (${retryCount + 1}/${MAX_RETRIES})`, 'error');
+      setTimeout(() => fetchTasks(retryCount + 1), (retryCount + 1) * 2000);
       } else {
-        console.log('Silent error: Database offline', err);
+        showFeedback('Database is currently offline. Please try again later.', 'error');
+        console.log('Final attempt failed:', err);
       } 
     } finally {
       setLoading(false);
