@@ -27,6 +27,10 @@ app.use(cors({
 
 app.use(express.json());
 
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({ status: "active", message: "Server is awake" });
+});
+
 
 // "Emergency Logger": It will print every request your server receives to the terminal:
 // app.use((req, res, next) => {

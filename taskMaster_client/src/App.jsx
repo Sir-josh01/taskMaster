@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import axios from 'axios';
 import Auth from './components/Auth';
 import { API_BASE_URL } from './config';
+
+import TaskForm from './components/TaskForm';
+import TaskItem from './components/TaskItem';
+
 import './App.css'
 
 function App() {
@@ -13,13 +17,8 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('task-master-theme') || 'dark');
   const [tasks, setTasks] = useState([]);
-  const [name, setName] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
-
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState('Medium');
-  const [dueDate, setDueDate] = useState('');
 
 
   const fetchTasks = async () => {
@@ -27,14 +26,19 @@ function App() {
     try {
       const token = localStorage.getItem('token'); // Get the saved token
       const res = await axios.get(`${API_BASE_URL}/tasks`, {
-      headers: {
-        Authorization: `Bearer ${token}` // Send the "Passport"
-      }
+      headers: { Authorization: `Bearer ${token}` },
+      timeout: 10000
      });
-      setTasks(res.data.tasks)
-      
+
+      setTasks(res.data.tasks) 
     } catch(err) {
-      console.log('Silent error: database is offline', err);
+      if (err.code === 'ECONNABORTED') {
+
+      showFeedback('Server is waking up from sleep. Retrying...', 'error');
+      setTimeout(() => fetchTasks(), 2000);
+      } else {
+        console.log('Silent error: Database offline', err);
+      } 
     } finally {
       setLoading(false);
     }
@@ -45,32 +49,34 @@ function App() {
     setEditText(task.name);
   };
 
-  const handleUpdate = async (id) => {
+  const handleUpdate = async (id, newName) => {
     const token = localStorage.getItem('token');
     const originalTasks = [...tasks];
 
-    if(!editText.trim()) { 
-      setEditingId(null);
-      return;
-    } 
+    // if(!editText.trim()) { 
+    //   setEditingId(null);
+    //   return;
+    // } 
     
     // const updatedTasks = tasks.map(task => 
     //   task.id === id ? {...task, name: editTask} : task
     // );
     // setTasks(updatedTasks);
-    setTasks(tasks.map(t => t._id === id ? {...t, name: editText} : t));
-    setEditingId(null);
+    setTasks(tasks.map(t => t._id === id ? {...t, name: newName} : t));
+    // setEditingId(null);
     try {
       await axios.patch(`${API_BASE_URL}/tasks/${id}`,
-         { name: editText }, 
+         { name: newName }, 
          { headers: { Authorization: `Bearer ${token}` } });
 
       showFeedback("Task updated!", "success");
-      fetchTasks();
+      return true;
+      // fetchTasks();
     } catch (error) {
       setTasks(originalTasks);
       showFeedback("Update failed. Reverting...", "error");
       console.log("Update failed", error);
+      return false;
    }
   };
 
@@ -95,35 +101,26 @@ function App() {
     }
   };
 
-  const createTask = async (e) => {
-    e.preventDefault();
-
-    if (!name || !dueDate) return;
+  const createTask = async (taskData) => {
+  
     const token = localStorage.getItem('token'); //get token
-
     setIsProcessing('creating');
     try {
       await axios.post(`${API_BASE_URL}/tasks`, {
-        name: name,
-        dueDate:dueDate,
-        priority,
-        description,
-        status: 'pending' //default status
+        ...taskData,
+        status: 'pending'
       }, { headers: { Authorization: `Bearer ${token}` } } // Added Auth
     );
-
-      setName('');
-      setDueDate('');
-      setDescription('');
-      setPriority('Medium');
-      setDueDate('');
+      
       fetchTasks();
       showFeedback("Task created successfully!", "success");
-
+      return true;
     } catch (error) {
+      const isTimeout = error.code === "ECONNABORTED";
+      // showFeedback(errorMsg, "Failed to create task");
+      showFeedback(isTimeout ? "Request timed out. Try again." : "Failed to ceeate task", "error");
       console.log('Error creating task', error.response?.data || error.message);
-      const errorMsg = error.response?.data || "Network Error: Could not save task.";
-      showFeedback(errorMsg, "Failed to create task");
+      return false;
     } finally {
       setIsProcessing(false);
     }
@@ -146,8 +143,11 @@ function App() {
       fetchTasks();
       showFeedback("Task deleted", "success");
     } catch (error) {
+       const isTimeout = error.code === 'ECONNABORTED' || error.message.includes('timeout');
+
       setTasks(originalTasks);
-      showFeedback("Error deleting task", "Task restored.", "error");
+      // showFeedback("Error deleting task", "Task restored.", "error");
+      showFeedback(isTimeout ? "Network too slow. Task restored." : "Error deleting task", "error");
       console.log('Error deleting task', error);
     } finally {
       setIsProcessing(null);
@@ -217,6 +217,20 @@ function App() {
     setTimeout(() => setFeedback({ msg: "", type: "" }), 3000);
   };
   
+useEffect(() => {
+    const wakeUpServer = async () => {
+      try {
+        await axios.get(`${API_BASE_URL}/health`, { timeout: 10000 });
+        console.log("Server status: Awake");
+      } catch (err) {
+        if (err.code === 'ECONNABORTED') {
+          console.log("Server is sleeping. Initializing wake-up sequence...");
+        }
+      }
+    };
+    wakeUpServer();
+  }, []);
+
 
 useEffect(() => {
   document.documentElement.setAttribute('data-theme', theme);
@@ -273,61 +287,17 @@ useEffect(() => {
                   </button>
                 </div>
               )}
-
-            {/* <button className="delete-acc-btn" onClick={handleDeleteAccount}>Delete Account</button>
-            <button className="logout-btn" onClick={() => {
-              localStorage.clear();
-              setUser(null);
-            }}>Logout</button> */}
           </div>
 
         <button className="theme-toggle" onClick={toggleTheme}>
         {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
         </button>
         <h2 className='title'>Task Master</h2>
-      
-        {/* Form Container */}
-          <form onSubmit={createTask} className='form-container'> 
-            <div className='input-group'>
-              <input 
-                className='main-input'
-                type="text"
-                placeholder="Capture a new task..."
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              {/* <button type='submit' className='add-btn'>Add Task</button> */}
-            </div>
 
-            <div className='secondary-inputs'>
-              <textarea 
-                className='desc-input'
-                placeholder='Add a description...'
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-
-              <div className='meta-inputs'>
-                <select className='priority-select' value={priority} onChange={(e) => setPriority(e.target.value)}>
-                  <option value="Low">Low Priority</option>
-                  <option value="Medium">Medium Priority</option>
-                  <option value="High">High Priority</option>
-                </select>
-
-                <input 
-                  className='date-input'
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  required
-                />
-                </div>
-            </div>
-              <button type='submit' className='add-btn' disabled={isProcessing === 'creating'}>{isProcessing === 'creating' ? <div className='spinner-small'></div> : "Add Task"}</button>
-          </form>
-
-             {/* Add this right after your </form> tag */}
+        {/* form container */}
+        <TaskForm isProcessing={isProcessing} createTask={createTask} />
+     
+             {/* Add this right after your form tag */}
           <div className="list-header">
             <h3>Your Tasks</h3>
               {tasks.some(t => t.isCompleted) && (
@@ -361,47 +331,16 @@ useEffect(() => {
               </div>
             ) : tasks.length > 0 ? (
               tasks.map((task) => (
-                <div key={task._id} className={`task-card priority-${(task.priority || "Medium").toLowerCase()}`}>
-                  <div className="main-row">
-                    <input 
-                      type='checkbox'
-                      checked={task.isCompleted}
-                      onChange={() => toggleComplete(task._id, task.isCompleted)} 
-                    />
-                    
-                    {editingId === task._id ? (
-                      <input 
-                        className="inline-edit-input"
-                        value={editText}
-                        onChange={(e) => setEditText(e.target.value)}
-                        onBlur={() => handleUpdate(task._id)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleUpdate(task._id)}
-                        autoFocus
-                      />
-                    ) : (
-                      <p 
-                        className={`task-name ${task.isCompleted ? 'strikethrough' : ''}`}
-                        onClick={() => startEditing(task)}
-                      >
-                        {task.name}
-                      </p>
-                    )}
-                    {/* <button onClick={() => deleteTask(task._id)} className='delete-btn'>Delete</button> */}
-                  </div>
-
-                  {/* NEW: Secondary info section */}
-                  <div className="task-details">
-                    {task.description && <p className="desc-text">{task.description}</p>}
-                    <div className="task-footer">
-                      <span className="date-tag">📅 {new Date(task.dueDate).toLocaleDateString()}</span>
-                      <span className={`priority-tag ${task.priority.toLowerCase()}`}>
-                        {task.priority}
-                      </span>
-                    </div>
-                  </div>
-                {/* </div> */}
-                  <button onClick={() => deleteTask(task._id)} disabled={isProcessing === task._id} className='delete-btn'>{isProcessing === task._id ? <div className='spinner-small'></div> : "Delete"}</button>
-                </div>
+              <Fragment key={task._id}>
+                <TaskItem 
+                  task={task}
+                  // startEditing={startEditing}
+                  handleUpdate={handleUpdate}
+                  toggleComplete={toggleComplete}
+                  deleteTask={deleteTask}
+                  isProcessing={isProcessing}
+                  />
+              </Fragment>
               ))
             ) : (
               <div className="empty-msg">
