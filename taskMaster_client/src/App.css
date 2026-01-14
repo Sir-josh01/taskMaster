@@ -217,6 +217,27 @@ body {
   transform: translateX(10px);
 }
 
+/* INline styling for edited inputs */
+.inline-edit-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--accent-color, #4a90e2);
+  color: inherit; /* Takes the color from the task-card text */
+  font-family: inherit;
+  font-size: inherit; /* Matches your <p> tag size */
+  font-weight: 500;
+  width: 100%;
+  padding: 2px 0;
+  outline: none;
+  margin-right: 10px;
+}
+
+/* Optional: Slight pulse effect when focused */
+.inline-edit-input:focus {
+  border-bottom-color: #61dafb;
+  transition: border-bottom 0.3s ease;
+}
+
 /* NEW: Ensures checkbox and name stay side-by-side */
 .main-row {
   display: flex;

@@ -14,6 +14,8 @@ const TaskItem = ({task, handleUpdate, toggleComplete, deleteTask, isProcessing}
     if (success) setIsEditing(false);
   };
 
+  const priorityClass = (task.priority || "Medium").toLowerCase();
+
   return (
        <div key={task._id} className={`task-card priority-${(task.priority || "Medium").toLowerCase()}`}>
           <div className="main-row">
@@ -28,9 +30,7 @@ const TaskItem = ({task, handleUpdate, toggleComplete, deleteTask, isProcessing}
                 className="inline-edit-input"
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                // onBlur={() => handleUpdate(task._id)}
                 onBlur={handleUpdateSubmit}
-                // onKeyDown={(e) => e.key === 'Enter' && handleUpdate(task._id)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleUpdateSubmit();
                   if (e.key === 'Escape') {
@@ -43,7 +43,6 @@ const TaskItem = ({task, handleUpdate, toggleComplete, deleteTask, isProcessing}
             ) : (
               <p 
                 className={`task-name ${task.isCompleted ? 'strikethrough' : ''}`}
-                // onClick={() => startEditing(task)}
                 onClick={() => setIsEditing(true)}
               >
                 {task.name}
@@ -56,15 +55,17 @@ const TaskItem = ({task, handleUpdate, toggleComplete, deleteTask, isProcessing}
             {task.description && <p className="desc-text">{task.description}</p>}
             <div className="task-footer">
               <span className="date-tag">📅 {new Date(task.dueDate).toLocaleDateString()}</span>
-              <span className={`priority-tag ${task.priority.toLowerCase()}`}>
-                {task.priority}
+              <span className={`priority-tag ${priorityClass}`}>
+                {task.priority || "Medium"}
               </span>
             </div>
           </div>
-          <button onClick={() => deleteTask(task._id)} 
+
+          <button
+            onClick={() => deleteTask(task._id)} 
             disabled={isProcessing === task._id} className='delete-btn'>
             {isProcessing === task._id ? <div className='spinner-small'></div> : "Delete"}
-            </button>
+          </button>
         </div>
     )
   }

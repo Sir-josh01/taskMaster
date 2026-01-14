@@ -3,22 +3,24 @@ import axios from 'axios';
 import Auth from './components/Auth';
 import { API_BASE_URL } from './config';
 
+import './App.css'
+
+import NavBar from './components/NavBar';
+import ThemeToggle from './components/ThemeToggle';
 import TaskForm from './components/TaskForm';
 import TaskItem from './components/TaskItem';
-
-import './App.css'
+import TaskStats from './components/TaskStats'
+import TaskList from './components/TaskList';
 
 function App() {
 
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
   const [feedback, setFeedback] = useState({ msg: "", type: "" });
-  const [showSettings, setShowSettings] = useState(false);
+ 
   const [loading, setLoading] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('task-master-theme') || 'dark');
   const [tasks, setTasks] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [editText, setEditText] = useState("");
 
 
   const fetchTasks = async () => {
@@ -44,26 +46,12 @@ function App() {
     }
   };
 
-  const startEditing = (task) => {
-    setEditingId(task._id);
-    setEditText(task.name);
-  };
 
   const handleUpdate = async (id, newName) => {
     const token = localStorage.getItem('token');
     const originalTasks = [...tasks];
 
-    // if(!editText.trim()) { 
-    //   setEditingId(null);
-    //   return;
-    // } 
-    
-    // const updatedTasks = tasks.map(task => 
-    //   task.id === id ? {...task, name: editTask} : task
-    // );
-    // setTasks(updatedTasks);
     setTasks(tasks.map(t => t._id === id ? {...t, name: newName} : t));
-    // setEditingId(null);
     try {
       await axios.patch(`${API_BASE_URL}/tasks/${id}`,
          { name: newName }, 
@@ -262,93 +250,39 @@ useEffect(() => {
       </div>
     )}
       <div className='task-container'>
-          <div className="user-bar">
-            <p>Logged in as: <strong>{user.name}</strong></p>
+         <NavBar 
+          user={user}
+          handleLogout={handleLogout}
+          handleDeleteAccount={handleDeleteAccount}
+         />
 
-              <div className="user-actions">
-                <button className="logout-btn" onClick={handleLogout}>Logout</button>
-                
-                {/* Settings Toggle */}
-                <button 
-                  className="settings-toggle" 
-                  onClick={() => setShowSettings(!showSettings)}
-                >
-                  {showSettings ? "✖" : "⚙️"}
-                </button>
-              </div>
+          <ThemeToggle
+            theme={theme} 
+            toggleTheme={toggleTheme}
+          />
 
-              {/* Hidden Settings Panel */}
-              {showSettings && (
-                <div className="settings-panel">
-                  <h4>Account Settings</h4>
-                  <p className="danger-text">Warning: This action is permanent.</p>
-                  <button className="delete-acc-btn" onClick={handleDeleteAccount}>
-                    Delete My Account
-                  </button>
-                </div>
-              )}
-          </div>
-
-        <button className="theme-toggle" onClick={toggleTheme}>
-        {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
-        </button>
         <h2 className='title'>Task Master</h2>
 
-        {/* form container */}
-        <TaskForm isProcessing={isProcessing} createTask={createTask} />
-     
-             {/* Add this right after your form tag */}
-          <div className="list-header">
-            <h3>Your Tasks</h3>
-              {tasks.some(t => t.isCompleted) && (
-                <button onClick={clearCompleted} className="clear-btn">
-                  🧹 Clear Completed
-                </button>
-              )}
-          </div>
+          {/* form container */}
+          <TaskForm 
+            isProcessing={isProcessing}
+            createTask={createTask}
+          />
 
-          <div className="stats-container">
-            <div className="stat-badge total">
-              <span className="stat-count">{tasks.length}</span>
-              <span className="stat-label">Total</span>
-            </div>
-            <div className="stat-badge pending">
-              <span className="stat-count">{tasks.filter(t => !t.isCompleted).length}</span>
-              <span className="stat-label">Pending</span>
-            </div>
-            <div className="stat-badge completed">
-              <span className="stat-count">{tasks.filter(t => t.isCompleted).length}</span>
-              <span className="stat-label">Done</span>
-            </div>
-          </div>
+            {/* Add this right after your form tag */}
+            <TaskStats 
+              tasks={tasks}
+              clearCompleted={clearCompleted}
+            />
 
-          <div className='task-list'>
-          {
-            loading ? (
-              <div className="loader-container">
-                <div className="spinner"></div>
-                <p>Syncing with database...</p>
-              </div>
-            ) : tasks.length > 0 ? (
-              tasks.map((task) => (
-              <Fragment key={task._id}>
-                <TaskItem 
-                  task={task}
-                  // startEditing={startEditing}
-                  handleUpdate={handleUpdate}
-                  toggleComplete={toggleComplete}
-                  deleteTask={deleteTask}
-                  isProcessing={isProcessing}
-                  />
-              </Fragment>
-              ))
-            ) : (
-              <div className="empty-msg">
-              <p>No tasks found. Enjoy your day! ☕</p>
-              </div>
-            )
-          }
-        </div>
+            <TaskList 
+              loading={loading}
+              tasks={tasks}
+              handleUpdate={handleUpdate}
+              toggleComplete={toggleComplete}
+              deleteTask={deleteTask}
+              isProcessing={isProcessing}
+            />
       </div>
     
     </>
