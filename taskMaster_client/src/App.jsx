@@ -4,6 +4,7 @@ import Auth from "./components/Auth";
 import { API_BASE_URL } from "./config";
 
 import "./App.css";
+import "./components/TaskList.css"
 
 import NavBar from "./components/NavBar";
 import ThemeToggle from "./components/ThemeToggle";

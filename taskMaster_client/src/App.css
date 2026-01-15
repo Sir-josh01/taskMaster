@@ -11,11 +11,12 @@
 
 [data-theme='light'] {
  --bg: #ffffff;
-  --text: #000000;
-  --text-secondary: #475569;
-  --glass: #f1f5f9; 
-  --border: #cbd5e1; 
+ --text: #1e293b;
+  --text-secondary: #64748b;
+ --glass: #f8fafc; 
+  --border: #e2e8f0; 
   --primary: #4f46e5;
+  --card-bg: #ffffff;
 }
 
 * {
@@ -23,6 +24,13 @@
   margin: 0;
   padding: 0;
 }
+
+/* .task-item {
+  background: var(--card-bg, var(--glass)); 
+  color: var(--text);
+  border: 1px solid var(--border);
+ 
+} */
 
 body {
   background: var(--bg);
@@ -35,7 +43,6 @@ body {
   margin-bottom: 10px;
 }
 
-/* --- Universal Component Updates --- */
 .task-container {
   color: var(--text);
   max-width: 800px;
@@ -46,28 +53,6 @@ body {
   border-radius: 24px;
   padding: 40px;
 }
-
-/* .priority-high { border-left-color: #f43f5e; }
-.priority-medium { border-left-color: #fbbf24; }
-.priority-low { border-left-color: #10b981; }
-
-
-/* 4. Priorities & Details */
-/* .priority-high { border-left-color: #f43f5e; }
-.priority-medium { border-left-color: #fbbf24; }
-.priority-low { border-left-color: #10b981; }
- 
-
-.skeleton-title { width: 60%; height: 20px; margin-bottom: 10px; }
-.skeleton-text { width: 90%; height: 15px; margin-bottom: 20px; }
-.skeleton-footer { display: flex; gap: 10px; }
-.skeleton-button { width: 60px; height: 30px; } 
-
-@keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-} 
-
 
 
 

@@ -15,9 +15,12 @@ const TaskList = ({ loading, tasks, handleUpdate, toggleComplete, deleteTask, is
   }
   if (tasks.length === 0) {
     return (
-      <div className="empty-msg">
-        <p>No tasks found. Enjoy your day! ☕</p>
+      <div className="empty-msg-container">
+        <div className="empty-msg-card">
+          <p>No tasks found. Enjoy your day! ☕</p>
+        </div>
       </div>
+     
     );
   }
   return (
