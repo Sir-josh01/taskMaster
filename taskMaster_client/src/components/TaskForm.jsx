@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import './TaskForm.css'
 
 const TaskForm = ({isProcessing, createTask }) => {
   const [name, setName] = useState('');
@@ -44,9 +45,9 @@ const TaskForm = ({isProcessing, createTask }) => {
 
             <div className='meta-inputs'>
               <select className='priority-select' value={priority} onChange={(e) => setPriority(e.target.value)}>
-                <option value="Low">Low Priority</option>
-                <option value="Medium">Medium Priority</option>
-                <option value="High">High Priority</option>
+                <option value="Low">Low priority</option>
+                <option value="Medium">Medium priority</option>
+                <option value="High">High priority</option>
               </select>
 
               <input 

@@ -1,4 +1,5 @@
 import React from 'react'
+import './TaskStats.css';
 
 const TaskStats = ({tasks, clearCompleted}) => {
   const total = tasks.length;

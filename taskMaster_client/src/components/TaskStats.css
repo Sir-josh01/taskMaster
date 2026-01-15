@@ -1,0 +1,58 @@
+/* Taskstats styling */
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 30px 0 15px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.clear-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background: var(--accent); 
+  color: white;
+  border-color: var(--accent);
+}
+
+.stats-container {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.stat-badge {
+  padding: 10px 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+  background: var(--glass); 
+  border: 1px solid var(--border);
+  transition: transform 0.2s ease;
+}
+
+.stat-badge:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stat-count { font-size: 1.5rem; font-weight: bold; }
+.stat-label { font-size: 0.8rem; opacity: 0.7; } 
+
+/* Coloring the counts for faster recognition */
+.stat-badge.total .stat-count { color: var(--primary); }
+.stat-badge.pending .stat-count { color: #fbbf24; } /* Yellow for pending */
+.stat-badge.completed .stat-count { color: #10b981; } /* Green for done */

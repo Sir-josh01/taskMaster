@@ -1,0 +1,65 @@
+/* Task list styling */
+/* 1. LIST CONTAINER */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.empty-msg {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-sec);
+  font-style: italic;
+  background: var(--glass);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  margin: 20px auto; 
+  max-width: 500px;
+} 
+
+.skeleton-card {
+  width: 100%;
+  height: 110px;
+  background: var(--glass);
+  border-radius: 18px;
+  margin-bottom: 15px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+} 
+
+.skeleton-card::before {
+  content: "";
+  /* display: block; */
+  width: 50%;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.skeleton-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.loader-container p {
+  margin-top: 15px;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+

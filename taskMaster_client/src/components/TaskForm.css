@@ -1,0 +1,113 @@
+/* Task form styling */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  background: var(--glass); 
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--border); 
+  margin-bottom: 15px;
+}
+
+.main-input { 
+   flex: 1;
+  background: var(--glass);
+  border-radius: 14px;
+  padding: 12px 20px;
+  color: white;
+  outline: none;
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text); 
+  outline: none;
+  font-size: 1rem;
+ } 
+
+/* .secondary-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 0 5px; 
+
+} */
+
+.secondary-inputs {
+  display: flex; /* Change from grid to flex column */
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.desc-input {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+}
+
+.priority-select:hover, .date-input:hover, .desc-input:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--primary);
+}
+
+.priority-select:focus, .date-input:focus, .desc-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Styling the Priority Select and Date Input */
+.priority-select, .date-input, .desc-input { 
+  padding: 10px 15px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  color: var(--text);  
+  padding: 10px 15px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.meta-inputs {
+  display: grid; 
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Style the dropdown options so they aren't white in a dark app */
+select option {
+  background: #1e293b; 
+  color: white;
+}
+
+.add-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-bottom: 30px;
+  margin-top: 30px;
+}
+
+.add-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+

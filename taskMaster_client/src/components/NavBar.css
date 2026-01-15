@@ -1,0 +1,117 @@
+/* NavBar styling */
+.user-bar {
+  z-index: 100; 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: var(--glass);
+  border-radius: 12px;
+  position: relative;
+  font-size: 0.9rem;
+}
+
+.user-actions {
+  position: relative; 
+  display: flex;
+  gap: 10px;
+  align-items: center; 
+}
+
+.settings-panel {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 240px; 
+  background: #1e293b;
+  z-index: 999; 
+  border: 1px solid #334155;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+} 
+
+.settings-panel h4 {
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+}
+
+.settings-panel {
+  top: 45px;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.settings-toggle {
+  z-index: 1000;
+  position: relative;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--text-color, #ffffff); 
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; 
+  transition: transform 0.2s ease;
+}
+
+.settings-toggle:hover {
+  transform: scale(1.1);
+}
+
+.settings-toggle.active-close {
+  color: #ff4d4d;
+}
+ 
+ .logout-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.logout-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.danger-text {
+  color: #ff4d4d;
+  font-size: 0.75rem;
+  margin: 5px 0 12px 0;
+  line-height: 1.4;
+  display: block;
+  background: rgba(244, 63, 94, 0.1);
+  padding: 8px;
+  border-radius: 6px;
+  border-left: 3px solid var(--accent);
+}
+
+.delete-acc-btn {
+  width: 100%; 
+  background: transparent;
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.delete-acc-btn:hover {
+  background: #ff4d4d;
+  color: white;
+}

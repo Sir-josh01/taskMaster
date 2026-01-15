@@ -1,0 +1,48 @@
+.theme-toggle {
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--primary);
+  background: var(--glass);
+  color: var(--text);
+  margin-bottom: 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.theme-toggle:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Visible in Light Mode (Default black icon) */
+/* .date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0); 
+} */
+
+/* Invert to White ONLY in Dark Mode */
+/* [data-theme='dark'] .date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+} */
+
+/* 1. Reset and Force Visibility */
+.date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1 !important; /* Forces the icon to be fully opaque */
+  display: block;
+  -webkit-appearance: listitem; /* Some browsers need this to render the icon box */
+}
+
+/* 2. Light Mode (Black icon) */
+[data-theme='light'] .date-input::-webkit-calendar-picker-indicator {
+  filter: invert(0) !important;
+}
+
+/* 3. Dark Mode (White icon) */
+[data-theme='dark'] .date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) !important;
+}

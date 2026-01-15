@@ -1,4 +1,5 @@
 import React, {useState} from 'react'
+import './TaskItem.css'
 
 const TaskItem = ({task, handleUpdate, toggleComplete, deleteTask, isProcessing}) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -41,9 +42,20 @@ const TaskItem = ({task, handleUpdate, toggleComplete, deleteTask, isProcessing}
                 autoFocus
               />
             ) : (
+              // <p 
+              //   className={`task-name ${task.isCompleted ? 'strikethrough' : ''}`}
+              //   onClick={() => setIsEditing(true)}
+              // >
               <p 
                 className={`task-name ${task.isCompleted ? 'strikethrough' : ''}`}
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  // If NOT editing, clicking the text toggles the checkbox
+                  if (!isEditing) {
+                    toggleComplete(task._id, task.isCompleted);
+                  }
+                }}
+                // Allow the user to enter Edit Mode via double click or a long press
+                onDoubleClick={() => setIsEditing(true)}
               >
                 {task.name}
               </p>
@@ -53,6 +65,7 @@ const TaskItem = ({task, handleUpdate, toggleComplete, deleteTask, isProcessing}
           {/* NEW: Secondary info section */}
           <div className="task-details">
             {task.description && <p className="desc-text">{task.description}</p>}
+            
             <div className="task-footer">
               <span className="date-tag">📅 {new Date(task.dueDate).toLocaleDateString()}</span>
               <span className={`priority-tag ${priorityClass}`}>

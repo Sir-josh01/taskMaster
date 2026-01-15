@@ -1,5 +1,6 @@
 import React from "react";
 import TaskItem from "./TaskItem";
+import './TaskItem.css'
 
 const TaskList = ({ loading, tasks, handleUpdate, toggleComplete, deleteTask, isProcessing }) => {
   if (loading) {
