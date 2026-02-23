@@ -4,7 +4,7 @@ export const ConnectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI),
       {
-        serverSelectionTimeoutMS: 5000, // Fail fast (5s)
+        serverSelectionTimeoutMS: 5000, 
       };
     console.log("✅ TaskMaster Database Connected");
   } catch (error) {

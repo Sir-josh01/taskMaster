@@ -131,7 +131,7 @@ function App() {
       const isTimeout = error.code === "ECONNABORTED";
       // showFeedback(errorMsg, "Failed to create task");
       showFeedback(
-        isTimeout ? "Request timed out. Try again." : "Failed to ceeate task",
+        isTimeout ? "Request timed out. Try again." : "Failed to create task",
         "error"
       );
       console.log("Error creating task", error.response?.data || error.message);

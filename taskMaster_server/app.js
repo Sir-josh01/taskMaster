@@ -6,6 +6,7 @@ import { ConnectDB } from "./config/database.js";
 
 import taskRouter from "./routes/task.js";
 import authRouter from './routes/auth.js'
+
 // error handlers
 import errorHandlerMiddleware from "./middleware/error-handler.js";
 import NotFoundError from "./middleware/not-found.js";
