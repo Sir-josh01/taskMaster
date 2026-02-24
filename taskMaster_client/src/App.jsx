@@ -24,7 +24,24 @@ function App() {
   const [theme, setTheme] = useState(
     localStorage.getItem("task-master-theme") || "dark"
   );
+  const [showOnlyUrgent, setShowOnlyUrgent] = useState(false);
   const [tasks, setTasks] = useState([]);
+
+  // Identify tasks
+  const today = new Date().toISOString().split('T')[0]; // "2025-02-23"
+
+  const urgentTasks = tasks.filter(task => {
+    if (task.isCompleted) return false; 
+    if (!task.dueDate) return false;  
+
+    const due = new Date(task.dueDate);
+    const todayEnd = new Date(today + 'T23:59:59');
+
+    return due <= todayEnd; 
+  });
+
+  // For debugging
+  console.log("Urgent tasks count:", urgentTasks.length);
 
   const fetchTasks = async (retryCount = 0) => {
     const MAX_RETRIES = 3;
@@ -288,6 +305,28 @@ function App() {
 
         <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
 
+        {/* ────── New: Urgent filter toggle ────── */}
+      <div style={{
+        margin: '12px 0 24px 0',
+        textAlign: 'center'
+      }}>
+        <button
+          onClick={() => setShowOnlyUrgent(!showOnlyUrgent)}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '12px',
+            background: showOnlyUrgent ? 'var(--accent)' : 'var(--glass)',
+            color: showOnlyUrgent ? 'white' : 'var(--text)',
+            border: '1px solid var(--border)',
+            cursor: 'pointer',
+            fontWeight: showOnlyUrgent ? 'bold' : 'normal'
+          }}
+        >
+          {showOnlyUrgent ? 'Showing Urgent Only' : 'Show Urgent / Overdue'}
+          {urgentTasks.length > 0 && ` (${urgentTasks.length})`}
+        </button>
+      </div>
+
         <h2 className="title">Task Master</h2>
 
         {/* form container */}
@@ -298,7 +337,7 @@ function App() {
 
         <TaskList
           loading={loading}
-          tasks={tasks}
+          tasks={showOnlyUrgent ? urgentTasks : tasks}
           handleUpdate={handleUpdate}
           toggleComplete={toggleComplete}
           deleteTask={deleteTask}
