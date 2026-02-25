@@ -4,7 +4,7 @@ import Auth from "./components/Auth";
 import { API_BASE_URL } from "./config";
 
 import "./App.css";
-import "./components/TaskList.css"
+import "./components/TaskList.css";
 
 import NavBar from "./components/NavBar";
 import ThemeToggle from "./components/ThemeToggle";
@@ -15,33 +15,99 @@ import Toast from "./components/Toast";
 
 function App() {
   const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null
+    JSON.parse(localStorage.getItem("user")) || null,
   );
   const [feedback, setFeedback] = useState({ msg: "", type: "" });
 
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [theme, setTheme] = useState(
-    localStorage.getItem("task-master-theme") || "dark"
+    localStorage.getItem("task-master-theme") || "dark",
   );
   const [showOnlyUrgent, setShowOnlyUrgent] = useState(false);
+  // const [eatTheFrogMode, setEatTheFrogMode] = useState(false);
   const [tasks, setTasks] = useState([]);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  const [overduePlayed, setOverduePlayed] = useState(new Set());
+  const [soundsEnabled, setSoundsEnabled] = useState(false);
+
+const enableSounds = () => {
+  const audio = new Audio('../public/sounds/Eugy_Official_-_Winners_Side__Official_Video_(128k).mp3');
+  audio.play()
+    .then(() => {
+      setSoundsEnabled(true);
+      showFeedback("Alarm sounds enabled! 🔔", "success");
+    })
+    .catch(err => {
+      showFeedback("Couldn't enable sounds – try again or check browser permissions", "error");
+    });
+};
+
 
   // Identify tasks
-  const today = new Date().toISOString().split('T')[0]; // "2025-02-23"
+  const today = new Date().toISOString().split("T")[0]; // "2025-02-23"
 
-  const urgentTasks = tasks.filter(task => {
-    if (task.isCompleted) return false; 
-    if (!task.dueDate) return false;  
+  const urgentTasks = tasks.filter((task) => {
+    if (task.isCompleted) return false;
+    if (!task.dueDate) return false;
 
     const due = new Date(task.dueDate);
-    const todayEnd = new Date(today + 'T23:59:59');
+    const todayEnd = new Date(today + "T23:59:59");
 
-    return due <= todayEnd; 
+    return due <= todayEnd;
   });
 
+  const oneWeekFromNow = new Date();
+  oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+  const oneWeekStr = oneWeekFromNow.toISOString().split("T")[0];
+
+  // Group tasks into categories for sorting
+  const overdue = tasks.filter(
+    (t) => !t.isCompleted && t.dueDate && new Date(t.dueDate) < new Date(today),
+  );
+
+  const dueToday = tasks.filter(
+    (t) =>
+      !t.isCompleted &&
+      t.dueDate &&
+      new Date(t.dueDate).toISOString().split("T")[0] === today,
+  );
+
+  const dueSoon = tasks.filter(
+    (t) =>
+      !t.isCompleted &&
+      t.dueDate &&
+      new Date(t.dueDate).toISOString().split("T")[0] > today &&
+      new Date(t.dueDate).toISOString().split("T")[0] <= oneWeekStr,
+  );
+
+  const laterOrNoDate = tasks.filter(
+    (t) =>
+      !t.isCompleted &&
+      (!t.dueDate ||
+        new Date(t.dueDate).toISOString().split("T")[0] > oneWeekStr),
+  );
+
+  const completed = tasks.filter((t) => t.isCompleted);
+
+  // Now combine them in priority order
+  const sortedTasks = [
+    ...overdue,
+    ...dueToday,
+    ...dueSoon,
+    ...laterOrNoDate,
+    ...completed,
+  ];
+
   // For debugging
-  console.log("Urgent tasks count:", urgentTasks.length);
+  // console.log({
+  //   overdue: overdue.length,
+  //   dueToday: dueToday.length,
+  //   dueSoon: dueSoon.length,
+  //   laterOrNoDate: laterOrNoDate.length,
+  //   completed: completed.length,
+  // });
 
   const fetchTasks = async (retryCount = 0) => {
     const MAX_RETRIES = 3;
@@ -61,13 +127,13 @@ function App() {
       if ((isTimeout || isNetworkError) && retryCount < MAX_RETRIES) {
         showFeedback(
           `Connection weak. Retrying... (${retryCount + 1}/${MAX_RETRIES})`,
-          "error"
+          "error",
         );
         setTimeout(() => fetchTasks(retryCount + 1), (retryCount + 1) * 2000);
       } else {
         showFeedback(
           "Database is currently offline. Please try again later.",
-          "error"
+          "error",
         );
         console.log("Final attempt failed:", err);
       }
@@ -85,7 +151,7 @@ function App() {
       await axios.patch(
         `${API_BASE_URL}/tasks/${id}`,
         { name: newName },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       showFeedback("Task updated!", "success");
@@ -103,7 +169,7 @@ function App() {
     const token = localStorage.getItem("token");
 
     const updatedTasks = tasks.map((task) =>
-      task._id === id ? { ...task, isCompleted: !currentStatus } : task
+      task._id === id ? { ...task, isCompleted: !currentStatus } : task,
     );
     setTasks(updatedTasks);
 
@@ -115,11 +181,11 @@ function App() {
           isCompleted: !currentStatus,
           status: newStatus, //flip the true or false;
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       showFeedback(
         newStatus === "completed" ? "Task Completed! 🎉" : "Task Re-opened",
-        "success"
+        "success",
       );
     } catch (error) {
       fetchTasks();
@@ -138,7 +204,7 @@ function App() {
           ...taskData,
           status: "pending",
         },
-        { headers: { Authorization: `Bearer ${token}` } } // Added Auth
+        { headers: { Authorization: `Bearer ${token}` } }, // Added Auth
       );
 
       fetchTasks();
@@ -149,7 +215,7 @@ function App() {
       // showFeedback(errorMsg, "Failed to create task");
       showFeedback(
         isTimeout ? "Request timed out. Try again." : "Failed to create task",
-        "error"
+        "error",
       );
       console.log("Error creating task", error.response?.data || error.message);
       return false;
@@ -182,7 +248,7 @@ function App() {
       // showFeedback("Error deleting task", "Task restored.", "error");
       showFeedback(
         isTimeout ? "Network too slow. Task restored." : "Error deleting task",
-        "error"
+        "error",
       );
       console.log("Error deleting task", error);
     } finally {
@@ -208,7 +274,7 @@ function App() {
 
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
-      "WARNING: This will permanently delete your accounts and all tasks!, Are you sure?"
+      "WARNING: This will permanently delete your accounts and all tasks!, Are you sure?",
     );
     if (confirmDelete) {
       try {
@@ -242,8 +308,8 @@ function App() {
         completedTasks.map((task) =>
           axios.delete(`${API_BASE_URL}/tasks/${task._id}`, {
             headers: { Authorization: `Bearer ${token}` }, // Added this
-          })
-        )
+          }),
+        ),
       );
 
       fetchTasks(); // Refresh the list
@@ -287,6 +353,40 @@ function App() {
     loadData();
   }, [user]);
 
+  useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentTime(Date.now());
+  }, 60000); // every 60 seconds
+
+  return () => clearInterval(interval);
+}, []);
+
+useEffect(() => {
+ if (!soundsEnabled || !currentTime) return;
+
+  tasks.forEach((task) => {
+    if (!task.dueDate || task.isCompleted) return;
+
+    const due = new Date(task.dueDate).getTime();
+    const now = currentTime;
+
+    if (due < now && !overduePlayed.has(task._id)) {
+      const audio = new Audio('../public/sounds/Eugy_Official_-_Winners_Side__Official_Video_(128k).mp3');
+      audio.play()
+        .then(() => {
+          console.log(`Alarm played for overdue task: ${task.name}`);
+        })
+        .catch(err => {
+          console.log("Auto play blocked:", err);
+          // Optional: remind user to interact again if needed
+        });
+
+      setOverduePlayed(prev => new Set([...prev, task._id]));
+      showFeedback(`Overdue: "${task.name}" – Time's up!`, "warning");
+    }
+  });
+}, [currentTime, tasks, overduePlayed, soundsEnabled]);
+
   // GateKeeper
   if (!user) {
     return <Auth onAuthSuccess={(userData) => setUser(userData)} />;
@@ -306,26 +406,96 @@ function App() {
         <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
 
         {/* ────── New: Urgent filter toggle ────── */}
-      <div style={{
-        margin: '12px 0 24px 0',
-        textAlign: 'center'
-      }}>
-        <button
-          onClick={() => setShowOnlyUrgent(!showOnlyUrgent)}
+        <div
           style={{
-            padding: '8px 16px',
-            borderRadius: '12px',
-            background: showOnlyUrgent ? 'var(--accent)' : 'var(--glass)',
-            color: showOnlyUrgent ? 'white' : 'var(--text)',
-            border: '1px solid var(--border)',
-            cursor: 'pointer',
-            fontWeight: showOnlyUrgent ? 'bold' : 'normal'
+            margin: "12px 0 24px 0",
+            textAlign: "center",
           }}
         >
-          {showOnlyUrgent ? 'Showing Urgent Only' : 'Show Urgent / Overdue'}
-          {urgentTasks.length > 0 && ` (${urgentTasks.length})`}
+          <button
+            onClick={() => setShowOnlyUrgent(!showOnlyUrgent)}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "12px",
+              background: showOnlyUrgent ? "var(--accent)" : "var(--glass)",
+              color: showOnlyUrgent ? "white" : "var(--text)",
+              border: "1px solid var(--border)",
+              cursor: "pointer",
+              fontWeight: showOnlyUrgent ? "bold" : "normal",
+            }}
+          >
+            {showOnlyUrgent ? "Showing Urgent Only" : "Show Urgent / Overdue"}
+            {urgentTasks.length > 0 && ` (${urgentTasks.length})`}
+          </button>
+        </div>
+
+        {/* Eat the Frog toggle – place after urgent toggle */}
+        <div
+          style={{
+            margin: "12px 0 24px 0",
+            textAlign: "center",
+            display: "flex",
+            justifyContent: "center",
+            gap: "16px",
+          }}
+        >
+          {/* Your existing urgent toggle here... */}
+
+          {/* <button
+            onClick={() => setEatTheFrogMode(!eatTheFrogMode)}
+            style={{
+              padding: "8px 20px",
+              borderRadius: "12px",
+              background: eatTheFrogMode ? "#4ade80" : "var(--glass)", // green when active
+              color: eatTheFrogMode ? "#0f172a" : "var(--text)",
+              border: "1px solid var(--border)",
+              cursor: "pointer",
+              fontWeight: eatTheFrogMode ? "bold" : "normal",
+              boxShadow: eatTheFrogMode
+                ? "0 0 12px rgba(74,222,128,0.4)"
+                : "none",
+            }}
+          >
+            {eatTheFrogMode ? "🐸 Eating the Frog" : "Eat the Frog"}
+          </button> */}
+        </div>
+
+       {!soundsEnabled && (
+          <button 
+            onClick={enableSounds}
+            style={{
+              padding: '8px 16px',
+              background: '#6366f1',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              margin: '10px 0',
+              fontWeight: '500'
+            }}
+          >
+            Enable Overdue Alarms (click once)
+          </button>
+        )}
+        
+        <button
+          onClick={() => {
+            const audio = new Audio('../public/sounds/Eugy_Official_-_Winners_Side__Official_Video_(128k).mp3');
+            audio.play().catch(() => {});
+            showFeedback("Alarm sound enabled! 🔔", "success");
+          }}
+          style={{
+            padding: '6px 14px',
+            borderRadius: '12px',
+            background: 'var(--glass)',
+            color: 'var(--text)',
+            border: '1px solid var(--border)',
+            cursor: 'pointer',
+            marginLeft: '12px'
+          }}
+        >
+          Enable Alarm Sound
         </button>
-      </div>
 
         <h2 className="title">Task Master</h2>
 
@@ -337,11 +507,12 @@ function App() {
 
         <TaskList
           loading={loading}
-          tasks={showOnlyUrgent ? urgentTasks : tasks}
+          tasks={showOnlyUrgent ? urgentTasks : sortedTasks}
           handleUpdate={handleUpdate}
           toggleComplete={toggleComplete}
           deleteTask={deleteTask}
           isProcessing={isProcessing}
+          currentTime={currentTime}
         />
       </div>
     </>

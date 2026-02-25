@@ -2,7 +2,7 @@ import React from "react";
 import TaskItem from "./TaskItem";
 import './TaskItem.css'
 
-const TaskList = ({ loading, tasks, handleUpdate, toggleComplete, deleteTask, isProcessing }) => {
+const TaskList = ({ loading, tasks, handleUpdate, toggleComplete, deleteTask, isProcessing, currentTime }) => {
   if (loading) {
     return (
       <div className="loader-container">
@@ -33,6 +33,7 @@ const TaskList = ({ loading, tasks, handleUpdate, toggleComplete, deleteTask, is
           toggleComplete={toggleComplete}
           deleteTask={deleteTask}
           isProcessing={isProcessing}
+          currentTime={currentTime}
         />
       ))}
     </div>
