@@ -33,7 +33,8 @@ function App() {
   const [soundsEnabled, setSoundsEnabled] = useState(false);
 
 const enableSounds = () => {
-  const audio = new Audio('../public/sounds/Eugy_Official_-_Winners_Side__Official_Video_(128k).mp3');
+  const audio = new Audio('/sounds/Eugy_Official_-_Winners_Side__Official_Video_(128k).mp3');
+  audio.volume = 0;
   audio.play()
     .then(() => {
       setSoundsEnabled(true);
@@ -356,36 +357,80 @@ const enableSounds = () => {
   useEffect(() => {
   const interval = setInterval(() => {
     setCurrentTime(Date.now());
-  }, 60000); // every 60 seconds
+  }, 10000); 
 
   return () => clearInterval(interval);
 }, []);
 
 useEffect(() => {
- if (!soundsEnabled || !currentTime) return;
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "visible" && soundsEnabled) {
+      // Tab just became visible → check for overdue and play sound
+      tasks.forEach((task) => {
+        if (!task.dueDate || task.isCompleted) return;
 
-  tasks.forEach((task) => {
-    if (!task.dueDate || task.isCompleted) return;
+        const due = new Date(task.dueDate).getTime();
+        const now = Date.now();
 
-    const due = new Date(task.dueDate).getTime();
-    const now = currentTime;
+        if (due < now && !overduePlayed.has(task._id)) {
+          const audio = new Audio('/sounds/Eugy_Official_-_Winners_Side__Official_Video_(128k).mp3');
+          audio.currentTime = 0;
+          audio.play().catch(() => {});
+        }
+      });
+    }
+  };
 
-    if (due < now && !overduePlayed.has(task._id)) {
-      const audio = new Audio('../public/sounds/Eugy_Official_-_Winners_Side__Official_Video_(128k).mp3');
-      audio.play()
-        .then(() => {
-          console.log(`Alarm played for overdue task: ${task.name}`);
-        })
-        .catch(err => {
-          console.log("Auto play blocked:", err);
-          // Optional: remind user to interact again if needed
-        });
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+}, [tasks, overduePlayed, soundsEnabled]);
 
-      setOverduePlayed(prev => new Set([...prev, task._id]));
-      showFeedback(`Overdue: "${task.name}" – Time's up!`, "warning");
+// useEffect(() => {
+  // if (Notification.permission !== "granted" || !currentTime) return;
+
+  // tasks.forEach((task) => {
+  //   if (!task.dueDate || task.isCompleted) return;
+
+  //   const due = new Date(task.dueDate).getTime();
+  //   const now = currentTime;
+
+  //   if (due < now && !overduePlayed.has(task._id)) {
+  //     new Notification("Task Overdue!", {
+  //       body: `"${task.name}" is overdue! Time to act.`,
+  //       icon: "/favicon.ico", // optional: your app icon
+  //       tag: task._id, // prevent duplicate notifications
+  //       renotify: true,
+  //     });
+
+  //     setOverduePlayed(prev => new Set([...prev, task._id]));
+  //     showFeedback(`Overdue: "${task.name}" – Notification sent!`, "warning");
+  //   }
+  // });
+// }, [currentTime, tasks, overduePlayed]);
+
+useEffect(() => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistration('/').then(reg => {
+      if (reg) {
+        console.log('Service Worker already registered');
+      } else {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('Service Worker registered:', reg.scope))
+          .catch(err => console.error('SW registration failed:', err));
+      }
+    });
+  }
+}, []);
+
+useEffect(() => {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data.type === 'PLAY_ALARM') {
+      const audio = new Audio('/sounds/Eugy_Official_-_Winners_Side__Official_Video_(128k).mp3');
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
     }
   });
-}, [currentTime, tasks, overduePlayed, soundsEnabled]);
+}, []);
 
   // GateKeeper
   if (!user) {
@@ -403,7 +448,156 @@ useEffect(() => {
           handleDeleteAccount={handleDeleteAccount}
         />
 
-        <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+        {/* Test button */}
+      <button 
+        onClick={async () => {
+          try {
+            await axios.post(
+              `${API_BASE_URL}/push/send-test-push`, 
+              {}, 
+              {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+              }
+            );
+            showFeedback("Test push sent! Check your desktop.", "success");
+          } catch (err) {
+            console.error("Test push failed:", err);
+            showFeedback("Failed to send test push – check console or subscription.", "error");
+          }
+        }}
+        style={{
+          padding: '8px 16px',
+          background: '#6366f1',
+          color: 'white',
+          border: 'none',
+          borderRadius: '12px',
+          cursor: 'pointer',
+          margin: '10px 0',
+          fontWeight: '500'
+        }}
+      >
+        Test Push
+      </button>
+
+        {/* subscribe notification */}
+        <div>
+          <button
+          onClick={async () => {
+            try {
+              // Step 1: Ask permission
+              if (Notification.permission !== 'granted') {
+                const perm = await Notification.requestPermission();
+                if (perm !== 'granted') {
+                  showFeedback("Permission denied — change in browser settings.", "error");
+                  return;
+                }
+              }
+
+              // Step 2: Get registration
+              const registration = await navigator.serviceWorker.ready;
+
+              // Step 3: Subscribe with VAPID
+              const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+              if (!vapidKey) {
+                showFeedback("VAPID key missing in .env — cannot subscribe", "error");
+                return;
+              }
+
+              const sub = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: vapidKey
+              });
+
+              console.log('Subscription object:', sub.toJSON()); // debug
+
+              // Step 4: Send to backend
+              const res = await axios.post(
+                `${API_BASE_URL}/push/subscribe`,
+                { subscription: sub.toJSON() },
+                {
+                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                }
+              );
+
+              console.log('Backend response:', res.data);
+              showFeedback("Successfully subscribed to push notifications!", "success");
+            } catch (err) {
+              console.error('Push subscription failed:', err);
+              showFeedback("Failed to subscribe — check console", "error");
+            }
+          }}
+          style={{
+            padding: '10px 20px',
+            background: '#10b981',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            margin: '15px 0',
+            fontSize: '16px'
+          }}
+        >
+          Subscribe to Push Notifications (Desktop)
+          </button>
+        </div>
+
+        <div style={{
+          // display: "flex",
+          // justifyContent: "spaceBetween",
+          // alignItems: "start",
+          // marginRight: "50px"
+        }}>
+   <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+
+         {!soundsEnabled && (
+          <button 
+            onClick={enableSounds}
+            style={{
+              padding: '8px 16px',
+              background: '#6366f1',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              margin: '10px 0',
+              fontWeight: '500'
+            }}
+          >
+            Enable Alarms
+          </button>
+        )}
+        </div>
+
+        {Notification.permission !== "granted" && (
+          <button
+            onClick={async () => {
+              try {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                  showFeedback("Notifications enabled! You'll get alerts for overdue tasks.", "success");
+                } else {
+                  showFeedback("Notifications denied – you can change this in browser settings.", "error");
+                }
+              } catch (err) {
+                showFeedback("Could not request notifications – check browser settings.", "error", err);
+              }
+            }}
+            style={{
+              padding: '8px 16px',
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              margin: '10px 0',
+              fontWeight: '500'
+            }}
+          >
+            Enable Desktop Notifications
+          </button>
+        )}
+     
 
         {/* ────── New: Urgent filter toggle ────── */}
         <div
@@ -459,43 +653,7 @@ useEffect(() => {
             {eatTheFrogMode ? "🐸 Eating the Frog" : "Eat the Frog"}
           </button> */}
         </div>
-
-       {!soundsEnabled && (
-          <button 
-            onClick={enableSounds}
-            style={{
-              padding: '8px 16px',
-              background: '#6366f1',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              margin: '10px 0',
-              fontWeight: '500'
-            }}
-          >
-            Enable Overdue Alarms (click once)
-          </button>
-        )}
         
-        <button
-          onClick={() => {
-            const audio = new Audio('../public/sounds/Eugy_Official_-_Winners_Side__Official_Video_(128k).mp3');
-            audio.play().catch(() => {});
-            showFeedback("Alarm sound enabled! 🔔", "success");
-          }}
-          style={{
-            padding: '6px 14px',
-            borderRadius: '12px',
-            background: 'var(--glass)',
-            color: 'var(--text)',
-            border: '1px solid var(--border)',
-            cursor: 'pointer',
-            marginLeft: '12px'
-          }}
-        >
-          Enable Alarm Sound
-        </button>
 
         <h2 className="title">Task Master</h2>
 

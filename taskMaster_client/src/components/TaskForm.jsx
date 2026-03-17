@@ -23,7 +23,7 @@ const TaskForm = ({ isProcessing, createTask }) => {
     }
   };
 
-  const today = new Date().toISOString().split('T')[0];
+ const today = new Date().toISOString().split('T')[0];
 
   return (
     <form onSubmit={handleSubmit} className="form-container">
@@ -60,25 +60,34 @@ const TaskForm = ({ isProcessing, createTask }) => {
           <input
             className="date-input"
             type="date"
-            value={dueDate.split("T")[0] || ""} // only show date part
+            value={dueDate.split("T")[0] || ""}
             onChange={(e) => {
               const newDate = e.target.value;
-              // Keep existing time if any, or default to 23:59
-              const existingTime = dueDate.split("T")[1] || "today";
+              if (!newDate) {
+                setDueDate('');
+                return;
+              }
+              const existingTime = dueDate.split('T')[1] || '23:59';
               setDueDate(`${newDate}T${existingTime}`);
             }}
             required
           />
 
           <input 
-          className='time-input'  // add this class in CSS if needed
+          className='time-input' 
           type="time"
           value={dueDate.split('T')[1] || '23:59'}
           onChange={(e) => {
-            const newTime = e.target.value;
-            // Keep existing date or default to today
-            const existingDate = dueDate.split('T')[0] || today; // today from App if passed, or compute here
-            setDueDate(`${existingDate}T${newTime}`);
+          const newTime = e.target.value;
+          if (!newTime) {
+            setDueDate('');
+            return;
+          }
+          let existingDate = dueDate.split('T')[0];
+          if (!existingDate) {
+            existingDate = today;
+          }
+          setDueDate(`${existingDate}T${newTime}`)
           }}
           required
         />

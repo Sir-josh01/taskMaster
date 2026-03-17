@@ -5,7 +5,9 @@ import dotenv from "dotenv";
 import { ConnectDB } from "./config/database.js";
 
 import taskRouter from "./routes/task.js";
-import authRouter from './routes/auth.js'
+import authRouter from './routes/auth.js';
+import pushRouter from './routes/auth.js';
+
 
 // error handlers
 import errorHandlerMiddleware from "./middleware/error-handler.js";
@@ -42,6 +44,7 @@ app.get('/api/v1/health', (req, res) => {
 // Routings address
 app.use("/api/v1/tasks", taskRouter);
 app.use("/api/v1/auth", authRouter);
+app.use('/api/v1/push', pushRouter);
 
 // middleware
 app.use(errorHandlerMiddleware);
@@ -55,6 +58,46 @@ ConnectDB().then(() => {
   console.log(`🚀 Server running on port ${port}`);
   });
 });
+
+// for automatic alarm
+import cron from 'cron';
+import { Task } from './models/task.js';
+import { Subscription } from './models/subscription.js';
+import webPush from 'web-push';
+
+// Cron job to check overdue every minute
+const job = new cron.CronJob('* * * * *', async () => {
+  console.log('Cron: Checking for overdue tasks...');
+  const now = new Date();
+
+  const overdueTasks = await Task.find({ dueDate: { $lt: now }, isCompleted: false });
+console.log(`Cron: Found ${overdueTasks.length} overdue tasks`);
+  for (const task of overdueTasks) {
+    const sub = await Subscription.findOne({ userId: task.createdBy });
+
+    if (sub) {
+      console.log(`Sending push to user ${task.createdBy} for task "${task.name}"`);
+      webPush.setVapidDetails(
+        process.env.VAPID_SUBJECT,
+        process.env.VAPID_PUBLIC_KEY,
+        process.env.VAPID_PRIVATE_KEY
+      );
+      try {
+      await webPush.sendNotification(sub.subscription, JSON.stringify({
+        title: 'Task Overdue',
+        body: `Your task "${task.name}" is overdue!`,
+      }));
+        console.log(`Push sent successfully for task: ${task.name}`);
+      } catch (err) {
+        console.error('Push send failed:', err);
+      }
+    } else {
+      console.log(`No subscription found for user ${task.createdBy}`);
+    }
+  }
+});
+
+job.start();
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
